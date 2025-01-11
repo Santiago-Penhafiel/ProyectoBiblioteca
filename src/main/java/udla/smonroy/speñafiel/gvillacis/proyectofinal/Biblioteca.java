@@ -1,4 +1,4 @@
-package org.example;
+package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -23,20 +23,24 @@ public class Biblioteca {
                 r = scan.nextInt();
                 switch (r) {
                     case 1: //añadir libros a mysql
-                        String sql = "INSERT INTO libros (titulo, autor, anio) VALUES (?, ?, ?)";
+                        String sql = "INSERT INTO libros (id, titulo, autor, anio) VALUES (?, ?, ?, ?)";
                         Libro libro = biblioteca.nuevoLibro();
-                        try(Connection conexion = MySQL.getConexion();
+                        if (libro != null){
+                            try(Connection conexion = MySQL.getConexion();
                                 PreparedStatement stm = conexion.prepareStatement(sql)){
 
-                            stm.setString(1, libro.getTitulo());
-                            stm.setString(2, libro.getAutor());
-                            stm.setInt(3, libro.getAnio());
-                            stm.executeUpdate();
+                                stm.setInt(1, libro.getIdAleatorio(conexion));
+                                stm.setString(2, libro.getTitulo());
+                                stm.setString(3, libro.getAutor());
+                                stm.setInt(4, libro.getAnio());
+                                stm.executeUpdate();
 
-                        } catch (SQLException e){
-                            System.out.println("Error al insertar el libro");
-                            e.printStackTrace();
+                            } catch (SQLException e){
+                                System.out.println("Error al insertar el libro");
+                                e.printStackTrace();
+                            }
                         }
+
                         break;
 
                     case 2: //editar
@@ -87,6 +91,33 @@ public class Biblioteca {
         }
         return null;
     }
+
+    public Usuario nuevoUsuario() {
+        try{
+            System.out.print("Ingrese el nombre : ");
+            String nombre = scan.nextLine();
+
+            System.out.print("Ingrese la edad : ");
+            int edad = scan.nextInt(); scan.nextLine();
+
+            System.out.print("Ingrese el número de teléfono : ");
+            int telefono = scan.nextInt(); scan.nextLine();
+
+            System.out.println("Ingrese el numero de cédula ");
+            int cedula = scan.nextInt(); scan.nextLine();
+
+            System.out.println("Ingrese el correo : ");
+            String correo = scan.nextLine();
+
+            return new Usuario(nombre, edad, telefono, cedula, correo);
+
+        }catch (Exception e){
+            System.out.println("Ingrese valores válidos");
+            return null;
+        }
+    }
+
+
 
 }
 
