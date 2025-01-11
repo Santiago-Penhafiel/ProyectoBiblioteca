@@ -1,6 +1,8 @@
 package org.example;
 
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class Biblioteca {
@@ -8,10 +10,11 @@ public class Biblioteca {
     Scanner scan = new Scanner(System.in);
     private String nombre;
     private String direccion;
-    private ArrayList<Libro> libros;
     private int numeroLibros;
 
     public static void main(String[] args) {
+        Scanner scan = new Scanner(System.in);
+
         Biblioteca biblioteca = new Biblioteca();
         int r = scan.nextInt();
 
@@ -19,9 +22,21 @@ public class Biblioteca {
             case 1: //gestionar libros
                 r = scan.nextInt();
                 switch (r) {
-                    case 1: //añadir
-                        biblioteca.nuevoLibro(biblioteca.numeroLibros);
-                        MySQL.getConexion();
+                    case 1: //añadir libros a mysql
+                        String sql = "INSERT INTO libros (titulo, autor, anio) VALUES (?, ?, ?)";
+                        Libro libro = biblioteca.nuevoLibro();
+                        try(Connection conexion = MySQL.getConexion();
+                                PreparedStatement stm = conexion.prepareStatement(sql)){
+
+                            stm.setString(1, libro.getTitulo());
+                            stm.setString(2, libro.getAutor());
+                            stm.setInt(3, libro.getAnio());
+                            stm.executeUpdate();
+
+                        } catch (SQLException e){
+                            System.out.println("Error al insertar el libro");
+                            e.printStackTrace();
+                        }
                         break;
 
                     case 2: //editar
@@ -51,8 +66,7 @@ public class Biblioteca {
 
     }
 
-    public void nuevoLibro(int numeroLibros) {
-
+    public Libro nuevoLibro() {
         try {
             System.out.print("Ingrese el titulo del libro que desea añadir : ");
             String titulo = scan.nextLine();
@@ -65,18 +79,15 @@ public class Biblioteca {
             scan.nextLine();
 
             System.out.print("El libro " + titulo +
-                    "con el id " + numeroLibros + 1
-                    + " se ha añadido a la lista de libros");
-
-            this.libros.add(new Libro(this.numeroLibros + 1, titulo, autor, anio));
+                    " se ha añadido a la lista de libros");
+            return new Libro(titulo, autor, anio);
 
         } catch (Exception e) {
             System.out.println("Ingrese valores válidos para añadir un libro");
-
         }
-
-
+        return null;
     }
+
 }
 
 

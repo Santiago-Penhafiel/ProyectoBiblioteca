@@ -5,14 +5,12 @@ import java.util.Scanner;
 public class Libro {
     Scanner scan = new Scanner(System.in);
     private boolean prestado;
-    private int id;
     private String titulo;
     private String autor;
     private Prestamo prestamo;
     private int anio;
 
-    public Libro(int id, String titulo, String autor, int anio) {
-        this.id = id;
+    public Libro(String titulo, String autor, int anio) {
         this.titulo = titulo;
         this.autor = autor;
         this.anio = anio;
@@ -20,14 +18,6 @@ public class Libro {
 
     public void editarTitulo (){
         System.out.print("Ingrese ");
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getTitulo() {
