@@ -21,9 +21,11 @@ public class Biblioteca {
                 switch (r) {
                     case 1: //añadir
                         biblioteca.nuevoLibro(biblioteca.numeroLibros);
+                        MySQL.getConexion();
                         break;
 
                     case 2: //editar
+
                         break;
 
                     case 3: //eliminar

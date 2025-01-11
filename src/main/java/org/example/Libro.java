@@ -18,6 +18,10 @@ public class Libro {
         this.anio = anio;
     }
 
+    public void editarTitulo (){
+        System.out.print("Ingrese ");
+    }
+
     public int getId() {
         return id;
     }
