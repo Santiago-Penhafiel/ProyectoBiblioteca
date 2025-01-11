@@ -1,8 +1,6 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Scanner;
 
 public class Biblioteca {
@@ -48,6 +46,7 @@ public class Biblioteca {
                         break;
 
                     case 3: //eliminar
+
                         break;
                 }
                 break;
@@ -64,6 +63,35 @@ public class Biblioteca {
                 break;
 
             case 3: //gestionar personas
+                break;
+
+            case 4: //imprimir inventario
+                try(Connection conexion = MySQL.getConexion();
+                    Statement stm = conexion.createStatement();
+                    ResultSet resultSet = stm.executeQuery("SELECT * FROM libros")){ //obtiene toda la tabla de libros
+
+                    ResultSetMetaData resultSetMetaData = resultSet.getMetaData(); // obtiene los metadatos de las columnas
+                    int columnas = resultSetMetaData.getColumnCount();
+
+                    for (int i = 1; i < columnas; i++) { //imprime el encabezado de las columnas
+                        System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                    }
+                    System.out.println();
+
+                    while (resultSet.next()){
+                        for (int i = 1; i < columnas; i++) {
+                            System.out.print(resultSet.getString(i) + "\t");
+                        }
+                        System.out.println();
+                    }
+
+
+
+                }catch (SQLException e){
+                    e.printStackTrace();
+
+                }
+
                 break;
 
         }
