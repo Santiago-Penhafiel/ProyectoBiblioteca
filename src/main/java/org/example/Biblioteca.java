@@ -3,8 +3,6 @@ package org.example;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-
-
 public class Biblioteca {
 
     Scanner scan = new Scanner(System.in);
@@ -20,7 +18,7 @@ public class Biblioteca {
         switch (r) {
             case 1: //gestionar libros
                 r = scan.nextInt();
-                switch (r){
+                switch (r) {
                     case 1: //añadir
                         biblioteca.nuevoLibro(biblioteca.numeroLibros);
                         break;
@@ -35,7 +33,7 @@ public class Biblioteca {
 
             case 2: //prestar o devolver
                 r = scan.nextInt();
-                switch (r){
+                switch (r) {
                     case 1: //prestar
                         break;
 
@@ -47,10 +45,7 @@ public class Biblioteca {
             case 3: //gestionar personas
                 break;
 
-
         }
-
-
 
     }
 
@@ -68,18 +63,18 @@ public class Biblioteca {
             scan.nextLine();
 
             System.out.print("El libro " + titulo +
-                    "con el id " + numeroLibros+1
-                    +" se ha añadido a la lista de libros");
+                    "con el id " + numeroLibros + 1
+                    + " se ha añadido a la lista de libros");
 
-            this.libros.add(new Libro(this.numeroLibros+1, titulo, autor, anio));
+            this.libros.add(new Libro(this.numeroLibros + 1, titulo, autor, anio));
 
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println("Ingrese valores válidos para añadir un libro");
 
         }
 
 
-
+    }
 }
 
 
