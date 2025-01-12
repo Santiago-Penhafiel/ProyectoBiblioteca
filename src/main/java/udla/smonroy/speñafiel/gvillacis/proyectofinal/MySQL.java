@@ -29,11 +29,20 @@ public class MySQL {
         }
     }
 
-    public static void eliminarElemento(Connection conexion, String tabla, String columna, String elemento){
-        try (Statement stm = conexion.createStatement()) {
-            String sql = "DELETE FROM " + tabla + " WHERE " + columna + " = \"" + elemento + "\"";
+    public static void eliminarElemento(Connection conexion, String tabla, String columna, Object elemento){
+        try  {
+
+            String sql = "DELETE FROM " + tabla + " WHERE " + columna + " = ?";
+            PreparedStatement stm = conexion.prepareStatement(sql);
+
+            if (elemento instanceof String){
+                stm.setString(1, (String)elemento );
+            } else if (elemento instanceof Integer){
+                stm.setInt(1, (Integer)elemento);
+            }
+
             //System.out.println(sql);
-            if(stm.executeUpdate(sql) > 0){
+            if(stm.executeUpdate() > 0){
                 System.out.println("Se ha eliminado " + elemento);
             } else {
                 System.out.println("No se ha encontrado " + elemento);
