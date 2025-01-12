@@ -1,6 +1,5 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
-import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -18,7 +17,7 @@ public class Biblioteca {
         System.out.println("Ingrese la opción para proceder");
         System.out.println("1. Agregar y eliminar libros");
         System.out.println("2. Administrar préstamos");
-        System.out.println("3. ");
+        System.out.println("3. Administrar personas");
         System.out.println("4. Imprimir el inventario de libros");
         int r = scan.nextInt();
 
@@ -68,18 +67,20 @@ public class Biblioteca {
                 r = scan.nextInt(); scan.nextLine();
                 switch (r) {
                     case 1: //prestar
-                        System.out.print("Titulo del libro a ser prestado : ");
-                        String elemento = scan.nextLine();
-                        try(Connection conexion = MySQL.getConexion()){
-                            ResultSet resultSet = MySQL.buscarPalabra(conexion, "titulo","libros", elemento);
+
+                        try(Connection conexion = MySQL.getConexion()) {
+                            System.out.print("Titulo del libro a ser prestado : ");
+                            String elemento = scan.nextLine();
+                            MySQL.buscar(conexion, "titulo", "libros", elemento, true);
                             System.out.println();
 
                             System.out.print("Ingrese el id del libro a prestar : ");
-                            int id = scan.nextInt(); scan.nextLine();
-                            Libro.prestar(conexion,id,0);
+                            int id = scan.nextInt();
+                            scan.nextLine();
+                            Libro.prestar(conexion, id, 0);
 
                         }catch (SQLException e){
-                            e.printStackTrace();
+                            System.out.println("Ingrese valores válidos");
                         }
 
 
@@ -91,7 +92,61 @@ public class Biblioteca {
                 break;
 
             case 3: //gestionar personas
+                System.out.println("1. Para gestionar usuarios");
+                System.out.println("2. Para gestionar empleados");
+                r = scan.nextInt(); scan.nextLine();
+                switch (r){
+                    case 1://gestionar usuarios
+                        System.out.println("1. Para agregar");
+                        System.out.println("2. Para eliminar");
+                        r = scan.nextInt(); scan.nextLine();
+                        switch (r){
+                            case 1://agregar usuario
+                                Usuario usuario = biblioteca.nuevoUsuario();
+                                String sql = "INSERT INTO usuarios (cedula, nombre, edad, telefono, correo) VALUES (?, ?, ?, ?, ?)";
+                                try (Connection conexion = MySQL.getConexion();
+                                    PreparedStatement stm = conexion.prepareStatement(sql)) {
+
+                                    ResultSet resultSet = MySQL.buscar(conexion, "cedula", "usuarios", usuario.getCedula(), false);
+                                    boolean existe = false;
+                                    if (resultSet != null){
+                                        while (resultSet.next()){
+                                            if (resultSet.getString(1).equals(usuario.getCedula())){
+                                                existe = true;
+                                            }
+                                        }
+                                    }
+
+                                    //System.out.println("EXISTE : "+existe);
+
+                                    if (!existe){
+                                        stm.setString(1, usuario.getCedula());
+                                        stm.setString(2, usuario.getNombre());
+                                        stm.setInt(3, usuario.getEdad());
+                                        stm.setString(4, usuario.getNumeroTelefonico());
+                                        stm.setString(5, usuario.getCorreo());
+
+                                        stm.executeUpdate();
+                                    } else {
+                                        System.out.println("El número de cédula ingresado ya existe");
+                                    }
+
+
+                                } catch (SQLException e){
+                                    e.printStackTrace();
+                                }
+
+                                break;
+                            case 2://eliminar usuario
+                                break;
+                        }
+                        break;
+
+                    case 2://gestionar personas
+                        break;
+                }
                 break;
+
 
             case 4: //imprimir inventario
                 try(Connection conexion = MySQL.getConexion()){
@@ -136,12 +191,12 @@ public class Biblioteca {
             int edad = scan.nextInt(); scan.nextLine();
 
             System.out.print("Ingrese el número de teléfono : ");
-            int telefono = scan.nextInt(); scan.nextLine();
+            String telefono = scan.nextLine();
 
-            System.out.println("Ingrese el numero de cédula ");
-            int cedula = scan.nextInt(); scan.nextLine();
+            System.out.print("Ingrese el numero de cédula : ");
+            String cedula = scan.nextLine();
 
-            System.out.println("Ingrese el correo : ");
+            System.out.print("Ingrese el correo : ");
             String correo = scan.nextLine();
 
             return new Usuario(nombre, edad, telefono, cedula, correo);

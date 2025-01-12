@@ -81,23 +81,33 @@ public class MySQL {
 
     }
 
-    public static ResultSet buscarPalabra(Connection conexion, String columna, String tabla, String elemento){
-        String sql = "SELECT * FROM " + tabla + " WHERE " + columna + " = \"" + elemento + "\"";
-        try(Statement stm = conexion.createStatement()){
-            ResultSet resultSet =  stm.executeQuery(sql);
-            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-            int columnas = resultSetMetaData.getColumnCount();
-
-            for (int i = 1; i <= columnas; i++) {
-                System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+    public static ResultSet buscar (Connection conexion, String columna, String tabla, Object elemento, boolean imprimir){
+        String sql = "SELECT * FROM " + tabla + " WHERE " + columna + " = ?"; //se usa la tabla, columna y el elemento a buscar que se requiera
+        try{
+            PreparedStatement stm = conexion.prepareStatement(sql);
+            //System.out.println(elemento.getClass());
+            if (elemento instanceof String){
+                stm.setString(1, String.valueOf(elemento) );
+            } else if(elemento instanceof Integer){
+                stm.setInt(1, (Integer)elemento);
             }
-            System.out.println();
 
-            while (resultSet.next()){
+            ResultSet resultSet =  stm.executeQuery();
+            if (imprimir){
+                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                int columnas = resultSetMetaData.getColumnCount();
+
                 for (int i = 1; i <= columnas; i++) {
-                    System.out.print(resultSet.getString(i) + "\t");
+                    System.out.print(resultSetMetaData.getColumnName(i) + "\t");
                 }
                 System.out.println();
+
+                while (resultSet.next()){
+                    for (int i = 1; i <= columnas; i++) {
+                        System.out.print(resultSet.getString(i) + "\t");
+                    }
+                    System.out.println();
+                }
             }
             return resultSet;
 
