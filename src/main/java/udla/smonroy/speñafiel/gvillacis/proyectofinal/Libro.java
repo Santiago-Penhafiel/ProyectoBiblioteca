@@ -1,9 +1,8 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import com.mysql.cj.util.EscapeTokenizer;
+
+import java.sql.*;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -46,8 +45,29 @@ public class Libro {
         return true;
     }
 
-    public void editarTitulo (){
-        System.out.print("Ingrese ");
+    public static void prestar (Connection conexion, int id, int nuevo){
+        Scanner scan = new Scanner(System.in);
+        //System.out.println(sql);
+        try(Statement stm = conexion.createStatement()){
+            ResultSet resultSet = stm.executeQuery("SELECT * FROM libros WHERE id = " + id);
+            if(resultSet.next() && resultSet.getString("disponibilidad").equals("0")){
+                System.out.println("El libro no se encuentra disponible");
+            }else {
+                String sql = "UPDATE libros SET disponibilidad = " + nuevo + " WHERE id = " + id;
+                stm.executeUpdate(sql);
+                sql = "UPDATE libros SET fecha_prestamo = CURDATE() WHERE id = " + id;
+                stm.executeUpdate(sql);
+
+                System.out.print("Ingrese el número de días del préstamo : ");
+                String dias = scan.nextLine();
+
+                sql = "UPDATE libros SET fecha_final_prestamo = DATE_ADD(fecha_prestamo, INTERVAL "+ dias + " DAY) WHERE id = " + id;
+                stm.executeUpdate(sql);
+            }
+
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
     }
 
     public String getTitulo() {

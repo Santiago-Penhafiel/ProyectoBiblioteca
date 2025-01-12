@@ -1,5 +1,6 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
+import javax.swing.plaf.nimbus.State;
 import java.sql.*;
 import java.util.Scanner;
 
@@ -14,18 +15,26 @@ public class Biblioteca {
         Scanner scan = new Scanner(System.in);
 
         Biblioteca biblioteca = new Biblioteca();
+        System.out.println("Ingrese la opción para proceder");
+        System.out.println("1. Agregar y eliminar libros");
+        System.out.println("2. Administrar préstamos");
+        System.out.println("3. ");
+        System.out.println("4. Imprimir el inventario de libros");
         int r = scan.nextInt();
 
         switch (r) {
             case 1: //gestionar libros
-                r = scan.nextInt();
+                System.out.println("Ingrese la opción para proceder");
+                System.out.println("1. Para añadir libros");
+                System.out.println("2. Para eliminar un libro");
+                r = scan.nextInt(); scan.nextLine();
                 switch (r) {
                     case 1: //añadir libros a mysql
                         String sql = "INSERT INTO libros (id, titulo, autor, anio) VALUES (?, ?, ?, ?)";
                         Libro libro = biblioteca.nuevoLibro();
-                        if (libro != null){
-                            try(Connection conexion = MySQL.getConexion();
-                                PreparedStatement stm = conexion.prepareStatement(sql)){
+                        if (libro != null) {
+                            try (Connection conexion = MySQL.getConexion();
+                                 PreparedStatement stm = conexion.prepareStatement(sql)) {
 
                                 stm.setInt(1, libro.getIdAleatorio(conexion));
                                 stm.setString(2, libro.getTitulo());
@@ -33,7 +42,7 @@ public class Biblioteca {
                                 stm.setInt(4, libro.getAnio());
                                 stm.executeUpdate();
 
-                            } catch (SQLException e){
+                            } catch (SQLException e) {
                                 System.out.println("Error al insertar el libro");
                                 e.printStackTrace();
                             }
@@ -41,20 +50,39 @@ public class Biblioteca {
 
                         break;
 
-                    case 2: //editar
-
-                        break;
-
-                    case 3: //eliminar
-
+                    case 2: //eliminar
+                        System.out.print("Ingrese el titulo del libro que desea eliminar : ");
+                        String elemento = scan.nextLine();
+                        try(Connection conexion = MySQL.getConexion()){
+                            MySQL.eliminarElemento(conexion, "libros", "titulo", elemento);
+                        }catch (SQLException e){
+                            System.out.println();
+                        }
                         break;
                 }
                 break;
 
             case 2: //prestar o devolver
-                r = scan.nextInt();
+                System.out.println("1. Para hacer un préstamo");
+                System.out.println("2. Para hacer una devolución");
+                r = scan.nextInt(); scan.nextLine();
                 switch (r) {
                     case 1: //prestar
+                        System.out.print("Titulo del libro a ser prestado : ");
+                        String elemento = scan.nextLine();
+                        try(Connection conexion = MySQL.getConexion()){
+                            ResultSet resultSet = MySQL.buscarPalabra(conexion, "titulo","libros", elemento);
+                            System.out.println();
+
+                            System.out.print("Ingrese el id del libro a prestar : ");
+                            int id = scan.nextInt(); scan.nextLine();
+                            Libro.prestar(conexion,id,0);
+
+                        }catch (SQLException e){
+                            e.printStackTrace();
+                        }
+
+
                         break;
 
                     case 2: //devolver
@@ -66,32 +94,11 @@ public class Biblioteca {
                 break;
 
             case 4: //imprimir inventario
-                try(Connection conexion = MySQL.getConexion();
-                    Statement stm = conexion.createStatement();
-                    ResultSet resultSet = stm.executeQuery("SELECT * FROM libros")){ //obtiene toda la tabla de libros
-
-                    ResultSetMetaData resultSetMetaData = resultSet.getMetaData(); // obtiene los metadatos de las columnas
-                    int columnas = resultSetMetaData.getColumnCount();
-
-                    for (int i = 1; i < columnas; i++) { //imprime el encabezado de las columnas
-                        System.out.print(resultSetMetaData.getColumnName(i) + "\t");
-                    }
-                    System.out.println();
-
-                    while (resultSet.next()){
-                        for (int i = 1; i < columnas; i++) {
-                            System.out.print(resultSet.getString(i) + "\t");
-                        }
-                        System.out.println();
-                    }
-
-
-
+                try(Connection conexion = MySQL.getConexion()){
+                    MySQL.imprimirTabla(conexion,"libros");
                 }catch (SQLException e){
-                    e.printStackTrace();
-
+                    System.out.println();
                 }
-
                 break;
 
         }
