@@ -74,8 +74,10 @@ public class MySQL {
                         System.out.print("Disponible\t");
                     } else if (i == 5 && resultSet.getString(i).equals("0")) {
                         System.out.print("No disponible\t");
-                    }else if (i == 6 && resultSet.getString(i) == null){
-                        System.out.print("No prestado");
+                    }else if (i == 6 && resultSet.getString(i) == null) {
+                        System.out.print("No prestado\t");
+                    } else if (i==6 && resultSet.getString(i) == null){
+                        System.out.println("\t");
                     } else {
                         System.out.print(resultSet.getString(i) + "\t");
                     }

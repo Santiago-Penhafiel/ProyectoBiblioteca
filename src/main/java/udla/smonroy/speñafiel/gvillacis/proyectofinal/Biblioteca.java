@@ -13,150 +13,177 @@ public class Biblioteca {
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
 
-        Biblioteca biblioteca = new Biblioteca();
-        System.out.println("Ingrese la opción para proceder");
-        System.out.println("1. Agregar y eliminar libros");
-        System.out.println("2. Administrar préstamos");
-        System.out.println("3. Administrar personas");
-        System.out.println("4. Imprimir el inventario de libros");
-        int r = scan.nextInt();
+        int r = -1;
 
-        switch (r) {
-            case 1: //gestionar libros
-                System.out.println("Ingrese la opción para proceder");
-                System.out.println("1. Para añadir libros");
-                System.out.println("2. Para eliminar un libro");
-                r = scan.nextInt(); scan.nextLine();
-                switch (r) {
-                    case 1: //añadir libros a mysql
-                        String sql = "INSERT INTO libros (id, titulo, autor, anio) VALUES (?, ?, ?, ?)";
-                        Libro libro = biblioteca.nuevoLibro();
-                        if (libro != null) {
-                            try (Connection conexion = MySQL.getConexion();
-                                 PreparedStatement stm = conexion.prepareStatement(sql)) {
+        while (r != 0){
+            Biblioteca biblioteca = new Biblioteca();
+            System.out.println("\nIngrese la opción para proceder");
+            System.out.println("1. Agregar y eliminar libros");
+            System.out.println("2. Administrar préstamos");
+            System.out.println("3. Administrar personas");
+            System.out.println("4. Imprimir el inventario de libros");
+            System.out.println("0. Salir");
+            r = scan.nextInt();
 
-                                stm.setInt(1, libro.getIdAleatorio(conexion));
-                                stm.setString(2, libro.getTitulo());
-                                stm.setString(3, libro.getAutor());
-                                stm.setInt(4, libro.getAnio());
-                                stm.executeUpdate();
-
-                            } catch (SQLException e) {
-                                System.out.println("Error al insertar el libro");
-                                e.printStackTrace();
-                            }
-                        }
-
-                        break;
-
-                    case 2: //eliminar
-                        System.out.print("Ingrese el titulo del libro que desea eliminar : ");
-                        String elemento = scan.nextLine();
-                        try(Connection conexion = MySQL.getConexion()){
-                            MySQL.eliminarElemento(conexion, "libros", "titulo", elemento);
-                        }catch (SQLException e){
-                            System.out.println();
-                        }
-                        break;
-                }
-                break;
-
-            case 2: //prestar o devolver
-                System.out.println("1. Para hacer un préstamo");
-                System.out.println("2. Para hacer una devolución");
-                r = scan.nextInt(); scan.nextLine();
-                switch (r) {
-                    case 1: //prestar
-
-                        try(Connection conexion = MySQL.getConexion()) {
-                            System.out.print("Titulo del libro a ser prestado : ");
-                            String elemento = scan.nextLine();
-                            MySQL.buscar(conexion, "titulo", "libros", elemento, true);
-                            System.out.println();
-
-                            System.out.print("Ingrese el id del libro a prestar : ");
-                            int id = scan.nextInt();
-                            scan.nextLine();
-                            Libro.prestar(conexion, id, 0);
-
-                        }catch (SQLException e){
-                            System.out.println("Ingrese valores válidos");
-                        }
+            switch (r) {
+                case 1: //gestionar libros
+                    System.out.println("Ingrese la opción para proceder");
+                    System.out.println("1. Para añadir libros");
+                    System.out.println("2. Para eliminar un libro");
+                    r = scan.nextInt(); scan.nextLine();
+                    switch (r) {
+                        case 1: //añadir libros a mysql
+                            String sql = "INSERT INTO libros (id, titulo, autor, anio) VALUES (?, ?, ?, ?)";
+                            Libro libro = biblioteca.nuevoLibro();
+                            if (libro != null) {
+                                try {
+                                    Connection conexion = MySQL.getConexion();
+                                    PreparedStatement stm = conexion.prepareStatement(sql);
+                                    stm.setInt(1, libro.getIdAleatorio(conexion));
+                                    stm.setString(2, libro.getTitulo());
+                                    stm.setString(3, libro.getAutor());
+                                    stm.setInt(4, libro.getAnio());
+                                    stm.executeUpdate();
 
 
-                        break;
-
-                    case 2: //devolver
-                        break;
-                }
-                break;
-
-            case 3: //gestionar personas
-                System.out.println("1. Para gestionar usuarios");
-                System.out.println("2. Para gestionar empleados");
-                r = scan.nextInt(); scan.nextLine();
-                switch (r){
-                    case 1://gestionar usuarios
-                        System.out.println("1. Para agregar");
-                        System.out.println("2. Para eliminar");
-                        r = scan.nextInt(); scan.nextLine();
-                        switch (r){
-                            case 1://agregar usuario
-                                Usuario usuario = biblioteca.nuevoUsuario();
-                                String sql = "INSERT INTO usuarios (cedula, nombre, edad, telefono, correo) VALUES (?, ?, ?, ?, ?)";
-                                try (Connection conexion = MySQL.getConexion();
-                                    PreparedStatement stm = conexion.prepareStatement(sql)) {
-
-                                    ResultSet resultSet = MySQL.buscar(conexion, "cedula", "usuarios", usuario.getCedula(), false);
-                                    boolean existe = false;
-                                    if (resultSet != null){
-                                        while (resultSet.next()){
-                                            if (resultSet.getString(1).equals(usuario.getCedula())){
-                                                existe = true;
-                                            }
-                                        }
-                                    }
-
-                                    //System.out.println("EXISTE : "+existe);
-
-                                    if (!existe){
-                                        stm.setString(1, usuario.getCedula());
-                                        stm.setString(2, usuario.getNombre());
-                                        stm.setInt(3, usuario.getEdad());
-                                        stm.setString(4, usuario.getNumeroTelefonico());
-                                        stm.setString(5, usuario.getCorreo());
-
-                                        stm.executeUpdate();
-                                    } else {
-                                        System.out.println("El número de cédula ingresado ya existe");
-                                    }
-
-
-                                } catch (SQLException e){
+                                } catch (SQLException e) {
+                                    System.out.println("Error al insertar el libro");
                                     e.printStackTrace();
                                 }
+                            }
 
-                                break;
-                            case 2://eliminar usuario
-                                break;
-                        }
-                        break;
+                            break;
 
-                    case 2://gestionar personas
-                        break;
-                }
-                break;
+                        case 2: //eliminar
+                            System.out.print("Ingrese el titulo del libro que desea eliminar : ");
+                            String elemento = scan.nextLine();
+
+                                Connection conexion = MySQL.getConexion();
+                                MySQL.buscar(conexion, "titulo", "libros", elemento, true);
+
+                                System.out.print("Ingrese el id del libro que desea eliminar : ");
+                                int id = scan.nextInt(); scan.nextLine();
+
+                                MySQL.eliminarElemento(conexion, "libros", "id", id);
 
 
-            case 4: //imprimir inventario
-                try(Connection conexion = MySQL.getConexion()){
-                    MySQL.imprimirTabla(conexion,"libros");
-                }catch (SQLException e){
-                    System.out.println();
-                }
-                break;
+                            break;
+                    }
+                    break;
 
+                case 2: //prestar o devolver
+                    System.out.println("1. Para hacer un préstamo");
+                    System.out.println("2. Para hacer una devolución");
+                    r = scan.nextInt(); scan.nextLine();
+                    switch (r) {
+                        case 1: //prestar
+
+                            try(Connection conexion = MySQL.getConexion()) {
+                                System.out.print("Titulo del libro a ser prestado : ");
+                                String elemento = scan.nextLine();
+                                MySQL.buscar(conexion, "titulo", "libros", elemento, true);
+                                System.out.println();
+
+                                System.out.print("Ingrese el id del libro a prestar : ");
+                                int id = scan.nextInt();
+                                scan.nextLine();
+                                Libro.prestar(conexion, id, 0);
+
+                            }catch (SQLException e){
+                                System.out.println("Ingrese valores válidos");
+                            }
+
+
+                            break;
+
+                        case 2: //devolver
+
+                                Connection conexion = MySQL.getConexion();
+                                System.out.print("Titulo del libro a devolver : ");
+                                String elemento = scan.nextLine();
+                                MySQL.buscar(conexion, "titulo", "libros", elemento, true);
+                                System.out.println();
+
+                                System.out.print("Ingrese el id del libro a devolver : ");
+                                int id = scan.nextInt();
+                                scan.nextLine();
+                                Libro.devolver(MySQL.getConexion(), id);
+
+
+                            break;
+                    }
+                    break;
+
+                case 3: //gestionar personas
+                    System.out.println("1. Para gestionar usuarios");
+                    System.out.println("2. Para gestionar empleados");
+                    r = scan.nextInt(); scan.nextLine();
+                    switch (r){
+                        case 1://gestionar usuarios
+                            System.out.println("1. Para agregar");
+                            System.out.println("2. Para eliminar");
+                            System.out.println("3. Para modificar usuario");
+                            r = scan.nextInt(); scan.nextLine();
+                            switch (r){
+                                case 1://agregar usuario
+                                    Usuario usuario = biblioteca.nuevoUsuario();
+                                    String sql = "INSERT INTO usuarios (cedula, nombre, edad, telefono, correo) VALUES (?, ?, ?, ?, ?)";
+                                    try (Connection conexion = MySQL.getConexion();
+                                         PreparedStatement stm = conexion.prepareStatement(sql)) {
+
+                                        ResultSet resultSet = MySQL.buscar(conexion, "cedula", "usuarios", usuario.getCedula(), false);
+                                        boolean existe = false;
+                                        if (resultSet != null){
+                                            while (resultSet.next()){
+                                                if (resultSet.getString(1).equals(usuario.getCedula())){
+                                                    existe = true;
+                                                }
+                                            }
+                                        }
+
+                                        //System.out.println("EXISTE : "+existe);
+
+                                        if (!existe){
+                                            stm.setString(1, usuario.getCedula());
+                                            stm.setString(2, usuario.getNombre());
+                                            stm.setInt(3, usuario.getEdad());
+                                            stm.setString(4, usuario.getNumeroTelefonico());
+                                            stm.setString(5, usuario.getCorreo());
+
+                                            stm.executeUpdate();
+                                        } else {
+                                            System.out.println("El número de cédula ingresado ya existe");
+                                        }
+
+
+                                    } catch (SQLException e){
+                                        e.printStackTrace();
+                                    }
+
+                                    break;
+                                case 2://eliminar usuario
+                                    break;
+                            }
+                            break;
+
+                        case 2://gestionar personas
+                            break;
+                    }
+                    break;
+
+
+                case 4: //imprimir inventario
+                    try(Connection conexion = MySQL.getConexion()){
+                        MySQL.imprimirTabla(conexion,"libros");
+                    }catch (SQLException e){
+                        System.out.println();
+                    }
+                    break;
+
+            }
         }
+
+
 
     }
 

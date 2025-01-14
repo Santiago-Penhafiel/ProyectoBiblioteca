@@ -70,6 +70,33 @@ public class Libro {
         }
     }
 
+    public static void devolver(Connection conexion, int id) {
+        try (Statement stm = conexion.createStatement()) {
+            // Verificar si el libro está prestado
+            ResultSet resultSet = stm.executeQuery("SELECT * FROM libros WHERE id = " + id);
+            if (resultSet.next()) {
+                String disponibilidad = resultSet.getString("disponibilidad");
+                if (disponibilidad.equals("1")) {
+                    System.out.println("El libro ya está disponible en la biblioteca. No es necesario devolverlo.");
+                } else {
+                    // Actualizar la disponibilidad del libro
+                    String sql = "UPDATE libros SET disponibilidad = 1 WHERE id = " + id;
+                    stm.executeUpdate(sql);
+
+                    // Limpiar las fechas de préstamo
+                    sql = "UPDATE libros SET fecha_prestamo = NULL, fecha_final_prestamo = NULL WHERE id = " + id;
+                    stm.executeUpdate(sql);
+
+                    System.out.println("El libro ha sido devuelto correctamente.");
+                }
+            } else {
+                System.out.println("No se encontró un libro con el ID proporcionado.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al devolver el libro: " + e.getMessage());
+        }
+    }
+
     public String getTitulo() {
         return titulo;
     }
