@@ -11,6 +11,7 @@ public class Biblioteca {
     private int numeroLibros;
 
     public static void main(String[] args) {
+        Connection conexion = MySQL.getConexion();
         Scanner scan = new Scanner(System.in);
 
         int r = -1;
@@ -37,7 +38,6 @@ public class Biblioteca {
                             Libro libro = biblioteca.nuevoLibro();
                             if (libro != null) {
                                 try {
-                                    Connection conexion = MySQL.getConexion();
                                     PreparedStatement stm = conexion.prepareStatement(sql);
                                     stm.setInt(1, libro.getIdAleatorio(conexion));
                                     stm.setString(2, libro.getTitulo());
@@ -58,13 +58,17 @@ public class Biblioteca {
                             System.out.print("Ingrese el titulo del libro que desea eliminar : ");
                             String elemento = scan.nextLine();
 
-                                Connection conexion = MySQL.getConexion();
-                                MySQL.buscar(conexion, "titulo", "libros", elemento, true);
+                                try{
+                                    MySQL.buscar(conexion, "titulo", "libros", elemento, true);
 
-                                System.out.print("Ingrese el id del libro que desea eliminar : ");
-                                int id = scan.nextInt(); scan.nextLine();
+                                    System.out.print("Ingrese el id del libro que desea eliminar : ");
+                                    int id = scan.nextInt(); scan.nextLine();
 
-                                MySQL.eliminarElemento(conexion, "libros", "id", id);
+                                    MySQL.eliminarElemento(conexion, "libros", "id", id);
+                                } catch (Exception e){
+                                    System.out.println("Ingrese valores válidos");
+                                }
+
 
 
                             break;
@@ -79,7 +83,7 @@ public class Biblioteca {
                         case 1: //prestar
 
                             try {
-                                Connection conexion = MySQL.getConexion();
+
                                 System.out.print("Titulo del libro a ser prestado : ");
                                 String elemento = scan.nextLine();
                                 MySQL.buscar(conexion, "titulo", "libros", elemento, true);
@@ -99,7 +103,6 @@ public class Biblioteca {
 
                         case 2: //devolver
                             try {
-                                Connection conexion = MySQL.getConexion();
                                 System.out.print("Titulo del libro a devolver : ");
                                 String elemento = scan.nextLine();
                                 MySQL.buscar(conexion, "titulo", "libros", elemento, true);
@@ -132,7 +135,7 @@ public class Biblioteca {
                                     Usuario usuario = biblioteca.nuevoUsuario();
                                     String sql = "INSERT INTO usuarios (cedula, nombre, edad, telefono, correo) VALUES (?, ?, ?, ?, ?)";
                                     try {
-                                         Connection conexion = MySQL.getConexion();
+
                                          PreparedStatement stm = conexion.prepareStatement(sql);
 
                                         ResultSet resultSet = MySQL.buscar(conexion, "cedula", "usuarios", usuario.getCedula(), false);
@@ -166,22 +169,24 @@ public class Biblioteca {
 
                                     break;
                                 case 2://eliminar usuario
+                                    Usuario.eliminarUsuario(conexion);
                                     break;
+
+                                case 3://modificar usuario
+                                    Usuario.modificarUsuario(conexion);
+                                    break;
+
                             }
                             break;
 
-                        case 2://gestionar personas
+                        case 2://gestionar empleados
                             break;
                     }
                     break;
 
 
                 case 4: //imprimir inventario
-                    try(Connection conexion = MySQL.getConexion()){
-                        MySQL.imprimirTabla(conexion,"libros", "cedula");
-                    }catch (SQLException e){
-                        System.out.println();
-                    }
+                    MySQL.imprimirTabla(conexion, "libros", "cedula");
                     break;
 
             }
@@ -237,6 +242,8 @@ public class Biblioteca {
             return null;
         }
     }
+
+
 
 
 
