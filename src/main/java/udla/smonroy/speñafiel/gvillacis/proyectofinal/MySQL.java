@@ -54,33 +54,41 @@ public class MySQL {
         }
     }
 
-    public static void imprimirTabla(Connection conexion, String tabla){
+    public static void imprimirTabla(Connection conexion, String tabla, String excepto){
         try(Statement stm = conexion.createStatement();
             ResultSet resultSet = stm.executeQuery("SELECT * FROM " + tabla)){ //obtiene toda la tabla
 
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData(); // obtiene los metadatos de las columnas
             int columnas = resultSetMetaData.getColumnCount();
             //System.out.println("COLUMNAS " + columnas);
-
+            int no = -1;
             for (int i = 1; i <= columnas; i++) { //imprime el encabezado de las columnas
-                System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                String resultado = resultSetMetaData.getColumnName(i);
+                if (! resultado.equals(excepto)){
+                    System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                } else {
+                    no = i;
+                }
             }
 
             System.out.println();
 
             while (resultSet.next()){//imprime el contenido de las columnas
                 for (int i = 1; i <= columnas; i++) {
-                    if(i == 5 && resultSet.getString(i).equals("1")){
-                        System.out.print("Disponible\t");
-                    } else if (i == 5 && resultSet.getString(i).equals("0")) {
-                        System.out.print("No disponible\t");
-                    }else if (i == 6 && resultSet.getString(i) == null) {
-                        System.out.print("No prestado\t");
-                    } else if (i==6 && resultSet.getString(i) == null){
-                        System.out.println("\t");
-                    } else {
-                        System.out.print(resultSet.getString(i) + "\t");
+                    if (i != no){
+                        if(i == 5 && resultSet.getString(i).equals("1")){
+                            System.out.print("Disponible\t");
+                        } else if (i == 5 && resultSet.getString(i).equals("0")) {
+                            System.out.print("No disponible\t");
+                        }else if (i == 6 && resultSet.getString(i) == null) {
+                            System.out.print("No prestado\t");
+                        } else if (i==6 && resultSet.getString(i) == null){
+                            System.out.println("\t");
+                        } else {
+                            System.out.print(resultSet.getString(i) + "\t");
+                        }
                     }
+                    
                 }
                 System.out.println();
             }
