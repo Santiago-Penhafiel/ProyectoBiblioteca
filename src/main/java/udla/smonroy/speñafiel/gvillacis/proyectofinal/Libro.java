@@ -55,8 +55,10 @@ public class Libro {
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if(resultSet.next() && resultSet.getString("disponibilidad").equals("0")){
+            if(resultSet.next() && resultSet.getString("disponibilidad").equals("0")) {
                 System.out.println("El libro no se encuentra disponible");
+            } else if (resultSet.next() && !resultSet.getString("cedula").equals("null")){
+                System.out.println("El libro se encuentra en préstamo");
             }else {
                 sql = "UPDATE libros SET disponibilidad = ?, fecha_prestamo = CURDATE(), cedula = ? WHERE id = ?";
                 preparedStatement = conexion.prepareStatement(sql);
