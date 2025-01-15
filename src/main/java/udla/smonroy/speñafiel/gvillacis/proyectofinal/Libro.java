@@ -53,7 +53,6 @@ public class Libro {
 
             preparedStatement.setInt(1, id);
 
-            Statement stm = conexion.createStatement();
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next() && resultSet.getString("disponibilidad").equals("0")){
@@ -90,21 +89,42 @@ public class Libro {
     }
 
     public static void devolver(Connection conexion, int id) {
-        try (Statement stm = conexion.createStatement()) {
+        try  {
             // Verificar si el libro está prestado
-            ResultSet resultSet = stm.executeQuery("SELECT * FROM libros WHERE id = " + id);
+            String sql = "SELECT * FROM libros WHERE id = ?";
+
+            PreparedStatement preparedStatement = conexion.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 String disponibilidad = resultSet.getString("disponibilidad");
+                String cedula = resultSet.getString("cedula");
+
                 if (disponibilidad.equals("1")) {
                     System.out.println("El libro ya está disponible en la biblioteca. No es necesario devolverlo.");
                 } else {
                     // Actualizar la disponibilidad del libro
-                    String sql = "UPDATE libros SET disponibilidad = 1 WHERE id = " + id;
-                    stm.executeUpdate(sql);
+                    sql = "UPDATE libros SET disponibilidad = 1 WHERE id = ?";
+                    preparedStatement = conexion.prepareStatement(sql);
+                    preparedStatement.setInt(1, id);
+
+                    preparedStatement.executeUpdate();
 
                     // Limpiar las fechas de préstamo
-                    sql = "UPDATE libros SET fecha_prestamo = NULL, fecha_final_prestamo = NULL WHERE id = " + id;
-                    stm.executeUpdate(sql);
+                    sql = "UPDATE libros SET fecha_prestamo = NULL, fecha_final_prestamo = NULL WHERE id = ?";
+                    preparedStatement = conexion.prepareStatement(sql);
+                    preparedStatement.setInt(1, id);
+
+                    preparedStatement.executeUpdate();
+
+                    //Liberar al usuario de la deuda
+                    sql = "UPDATE usuarios SET id = NULL WHERE cedula = ?";
+                    preparedStatement = conexion.prepareStatement(sql);
+                    preparedStatement.setString(1, cedula);
+
+                    preparedStatement.executeUpdate();
+
 
                     System.out.println("El libro ha sido devuelto correctamente.");
                 }

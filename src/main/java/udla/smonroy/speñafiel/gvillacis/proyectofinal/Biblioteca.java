@@ -118,7 +118,8 @@ public class Biblioteca {
                                 System.out.print("Ingrese el id del libro a devolver : ");
                                 int id = scan.nextInt();
                                 scan.nextLine();
-                                Libro.devolver(MySQL.getConexion(), id);
+                                Libro.devolver(MySQL.getConexion(), id);1
+
 
                             }catch (Exception e){
                                 System.out.println("Ingrese valores válidos");
