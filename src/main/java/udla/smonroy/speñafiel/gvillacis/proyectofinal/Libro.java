@@ -1,6 +1,5 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
-import com.mysql.cj.util.EscapeTokenizer;
 
 import java.sql.*;
 import java.util.Random;
@@ -45,24 +44,44 @@ public class Libro {
         return true;
     }
 
-    public static void prestar (Connection conexion, int id, int nuevo){
+    public static void prestar (Connection conexion, int id, int nuevo, String cedula){
         Scanner scan = new Scanner(System.in);
         //System.out.println(sql);
-        try(Statement stm = conexion.createStatement()){
-            ResultSet resultSet = stm.executeQuery("SELECT * FROM libros WHERE id = " + id);
+        try{
+            String sql = "SELECT * FROM libros WHERE id = + ?";
+            PreparedStatement preparedStatement = conexion.prepareStatement(sql);
+
+            preparedStatement.setInt(1, id);
+
+            Statement stm = conexion.createStatement();
+            ResultSet resultSet = preparedStatement.executeQuery();
+
             if(resultSet.next() && resultSet.getString("disponibilidad").equals("0")){
                 System.out.println("El libro no se encuentra disponible");
             }else {
-                String sql = "UPDATE libros SET disponibilidad = " + nuevo + " WHERE id = " + id;
-                stm.executeUpdate(sql);
-                sql = "UPDATE libros SET fecha_prestamo = CURDATE() WHERE id = " + id;
-                stm.executeUpdate(sql);
+                sql = "UPDATE libros SET disponibilidad = ?, fecha_prestamo = CURDATE(), cedula = ? WHERE id = ?";
+                preparedStatement = conexion.prepareStatement(sql);
+                preparedStatement.setInt(1, nuevo);
+                preparedStatement.setString(2, cedula);
+                preparedStatement.setInt(3, id);
+
+                preparedStatement.executeUpdate();
 
                 System.out.print("Ingrese el número de días del préstamo : ");
                 String dias = scan.nextLine();
 
-                sql = "UPDATE libros SET fecha_final_prestamo = DATE_ADD(fecha_prestamo, INTERVAL "+ dias + " DAY) WHERE id = " + id;
-                stm.executeUpdate(sql);
+                sql = "UPDATE libros SET fecha_final_prestamo = DATE_ADD(fecha_prestamo, INTERVAL ? DAY) WHERE id = ?";
+                preparedStatement = conexion.prepareStatement(sql);
+                preparedStatement.setString(1, dias);
+                preparedStatement.setInt(2, id);
+
+                preparedStatement.executeUpdate();
+
+                sql = "UPDATE usuarios SET id = ? WHERE cedula = ?";
+                preparedStatement = conexion.prepareStatement(sql);
+                preparedStatement.setInt(1, id);
+                preparedStatement.setString(2, cedula);
+
             }
 
         }catch (SQLException e){

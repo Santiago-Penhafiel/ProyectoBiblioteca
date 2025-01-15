@@ -1,9 +1,7 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import javax.xml.transform.Source;
+import java.sql.*;
 import java.util.Scanner;
 
 public class Usuario extends Persona{
@@ -12,6 +10,45 @@ public class Usuario extends Persona{
 
     public Usuario(String nombre, int edad, String numeroTelefonico, String cedula, String correo) {
         super(nombre, edad, numeroTelefonico, cedula, correo);
+    }
+
+    public static boolean imprimir(Connection conexion, String cedula){
+        boolean existe = false;
+        try {
+            String sql = "SELECT * FROM usuarios WHERE cedula = ?";
+            PreparedStatement preparedStatement = conexion.prepareStatement(sql);
+            preparedStatement.setString(1, cedula);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+
+            if (resultSet!=null){
+
+                System.out.println("NO ES NULO");
+                ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+                int columnas = resultSetMetaData.getColumnCount();
+                for (int i = 1; i <= columnas ; i++) {
+                    System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                }
+                System.out.println();
+
+                while (resultSet.next()){
+
+                    for (int i = 1; i <= columnas; i++) {
+                        System.out.print(resultSet.getString(i) + "\t");
+                    }
+                    System.out.println();
+                    existe = true;
+                }
+            }
+
+            if (! existe){
+                System.out.println("No existe usuario con ese número de cédula");
+            }
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return existe;
     }
 
     public static void modificarUsuario(Connection conexion) {

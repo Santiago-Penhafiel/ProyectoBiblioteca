@@ -48,7 +48,7 @@ public class Biblioteca {
 
                                 } catch (SQLException e) {
                                     System.out.println("Error al insertar el libro");
-                                    e.printStackTrace();
+                                    System.out.println(e.getMessage());
                                 }
                             }
 
@@ -92,9 +92,16 @@ public class Biblioteca {
                                 System.out.print("Ingrese el id del libro a prestar : ");
                                 int id = scan.nextInt();
                                 scan.nextLine();
-                                Libro.prestar(conexion, id, 0);
+
+                                System.out.println("Ingrese el numero de cédula de la persona que requiere el préstamo : ");
+                                String cedula = scan.nextLine();
+
+                                if(Usuario.imprimir(conexion, cedula)){
+                                    Libro.prestar(conexion, id, 0, cedula);
+                                }
 
                             }catch (Exception e){
+                                System.out.println(e.getMessage());
                                 System.out.println("Ingrese valores válidos");
                             }
 
@@ -192,7 +199,7 @@ public class Biblioteca {
             }
         }
 
-
+        MySQL.cerrarConexion();
         }
 
 
