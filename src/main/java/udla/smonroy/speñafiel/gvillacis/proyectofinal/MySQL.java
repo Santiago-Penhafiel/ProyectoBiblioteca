@@ -3,6 +3,7 @@ package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 
 public class MySQL {
     private static final String URL = "jdbc:mysql://localhost:3306/biblioteca";
@@ -63,7 +64,7 @@ public class MySQL {
 
             ResultSetMetaData resultSetMetaData = resultSet.getMetaData(); // obtiene los metadatos de las columnas
             int columnas = resultSetMetaData.getColumnCount();
-            //System.out.println("COLUMNAS " + columnas);
+
             int no = -1;
 
             if (resultSet.next()){
@@ -100,6 +101,27 @@ public class MySQL {
                 System.out.println("Lista vacía");
             }
 
+            if (tabla.equals("usuarios")){
+                Statement statement = conexion.createStatement();
+                ResultSet resultado = statement.executeQuery("SELECT * FROM usuarios");
+
+                ArrayList<String> cedulas = new ArrayList<>();
+
+                while (resultado.next()){
+                    cedulas.add(resultado.getString("cedula"));
+                }
+                boolean encabezado;
+                for (int i = 0; i < cedulas.size(); i++) {
+                    if (MySQL.diasPasados(conexion, cedulas.get(i)) > 0){
+                        System.out.println("LOS SIGUIENTES CLIENTES TIENEN DÍAS ATRASADOS EN SU ENTREGA");
+                        encabezado = (i == 0);
+                        MySQL.buscar(conexion, "cedula", "usuarios", cedulas.get(i), true, null, encabezado);
+                        System.out.println(MySQL.diasPasados(conexion, cedulas.get(i)) + " Días retrasado");
+                    }
+                }
+
+            }
+
 
         }catch (SQLException e){
             System.out.println(e.getMessage());;
@@ -108,11 +130,11 @@ public class MySQL {
 
     }
 
-    public static ResultSet buscar (Connection conexion, String columna, String tabla, Object elemento, boolean imprimir, String excepto){
+    public static ResultSet buscar (Connection conexion, String columna, String tabla, Object elemento, boolean imprimir, String excepto, boolean encabezado){
         String sql = "SELECT * FROM " + tabla + " WHERE " + columna + " = ?"; //se usa la tabla, columna y el elemento a buscar que se requiera
         try{
             PreparedStatement stm = conexion.prepareStatement(sql);
-            //System.out.println(elemento.getClass());
+            //agrega el elemento para realizar la búsqueda
             if (elemento instanceof String){
                 stm.setString(1, String.valueOf(elemento) );
             } else if(elemento instanceof Integer){
@@ -121,18 +143,20 @@ public class MySQL {
 
             ResultSet resultSet =  stm.executeQuery();
 
-            int no = -1;
+            int no = 10000;
             if (imprimir && resultSet.next()){
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                 int columnas = resultSetMetaData.getColumnCount();
 
-                for (int i = 1; i <= columnas; i++) {
-                    if (!resultSetMetaData.getColumnName(i).equals(excepto)){
-                        System.out.print(resultSetMetaData.getColumnName(i) + "\t");
-                    }else {
-                        no = i;
-                    }
+                if (encabezado){
+                    for (int i = 1; i <= columnas; i++) {
+                        if (!resultSetMetaData.getColumnName(i).equals(excepto)){
+                            System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                        }else {
+                            no = i;
+                        }
 
+                    }
                 }
                 System.out.println();
 
@@ -179,7 +203,7 @@ public class MySQL {
 
                     LocalDate fechaActual = LocalDate.now(); //fecha actual
 
-                    LocalDate fecha_final_prestamo = resultSet.getObject("fecha_column", LocalDate.class);//se obtiene la fecha última de devolución
+                    LocalDate fecha_final_prestamo = resultSet.getObject("fecha_final_prestamo", LocalDate.class);//se obtiene la fecha última de devolución
 
                     return (int)ChronoUnit.DAYS.between(fecha_final_prestamo, fechaActual); //dias de diferencia entre las dos fechas
 

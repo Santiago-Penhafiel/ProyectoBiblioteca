@@ -146,6 +146,13 @@ public class Libro {
 
                     preparedStatement.executeUpdate();
 
+                    //Limpiar la columna cedula
+                    sql = "UPDATE libros SET cedula = NULL WHERE id = ?";
+                    preparedStatement = conexion.prepareStatement(sql);
+                    preparedStatement.setInt(1, id);
+
+                    preparedStatement.executeUpdate();
+
 
                     System.out.println("El libro ha sido devuelto correctamente.");
                 }
@@ -163,7 +170,7 @@ public class Libro {
         System.out.print("Ingrese el titulo del libro que desea modificar : ");
         String titulo = scan.nextLine();
 
-        MySQL.buscar(conexion, "titulo", "libros", titulo, true, "cedula");
+        MySQL.buscar(conexion, "titulo", "libros", titulo, true, null, true);
 
         System.out.print("Ingrese el id del libro que desea modificar: ");
         int id = scan.nextInt(); scan.nextLine();

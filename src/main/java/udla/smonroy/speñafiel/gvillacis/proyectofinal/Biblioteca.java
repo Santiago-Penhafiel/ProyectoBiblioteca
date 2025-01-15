@@ -1,5 +1,6 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
+import javax.xml.transform.Source;
 import java.sql.*;
 import java.util.Locale;
 import java.util.Scanner;
@@ -31,7 +32,7 @@ public class Biblioteca {
         while (r != 0){
 
             System.out.println("\nIngrese la opción para proceder");
-            System.out.println("1. Agregar y eliminar libros");
+            System.out.println("1. Administrar libros");
             System.out.println("2. Administrar préstamos");
             System.out.println("3. Administrar usuarios");
             System.out.println("4. Mostrar el inventario de libros");
@@ -76,7 +77,7 @@ public class Biblioteca {
                             String elemento = scan.nextLine();
 
                                 try{
-                                    MySQL.buscar(conexion, "titulo", "libros", elemento, true, null);
+                                    MySQL.buscar(conexion, "titulo", "libros", elemento, true, null, true);
 
                                     System.out.print("Ingrese el id del libro que desea eliminar : ");
                                     int id = scan.nextInt(); scan.nextLine();
@@ -106,7 +107,7 @@ public class Biblioteca {
 
                                 System.out.print("Titulo del libro a ser prestado : ");
                                 String elemento = scan.nextLine();
-                                ResultSet resultSet = MySQL.buscar(conexion, "titulo", "libros", elemento, true, "cedula");
+                                ResultSet resultSet = MySQL.buscar(conexion, "titulo", "libros", elemento, true, null, true);
                                 System.out.println();
 
                                 if (resultSet != null){
@@ -141,7 +142,7 @@ public class Biblioteca {
                             try {
                                 System.out.print("Titulo del libro a devolver : ");
                                 String elemento = scan.nextLine();
-                                MySQL.buscar(conexion, "titulo", "libros", elemento, true, "cedula");
+                                MySQL.buscar(conexion, "titulo", "libros", elemento, true, null, true);
                                 System.out.println();
 
                                 System.out.print("Ingrese el id del libro a devolver : ");
@@ -172,7 +173,7 @@ public class Biblioteca {
 
                                     PreparedStatement stm = conexion.prepareStatement(sql);
 
-                                    ResultSet resultSet = MySQL.buscar(conexion, "cedula", "usuarios", usuario.getCedula(), false, null);
+                                    ResultSet resultSet = MySQL.buscar(conexion, "cedula", "usuarios", usuario.getCedula(), false, null, true);
                                     boolean existe = false;
                                     if (resultSet != null){//comprueba la existencia de un usuario con la cedula
                                         while (resultSet.next()){
@@ -219,7 +220,31 @@ public class Biblioteca {
 
                 case 5:  //lista de usuarios
                     MySQL.imprimirTabla(conexion, "usuarios", "id");
+                    break;
 
+                case 6://buscador
+                    System.out.println("1. Para buscar libros");
+                    System.out.println("2. Para buscar usuarios");
+                    int r4 = scan.nextInt();scan.nextLine();
+
+                    switch (r4){
+                        case 1://Libros
+                            System.out.print("Ingrese el título del libro a buscar : ");
+                            String titulo = scan.nextLine();
+
+                            MySQL.buscar(conexion, "titulo", "libros", titulo, true, null, true);
+
+                            break;
+
+                        case 2://usuarios
+                            System.out.print("Ingrese el número de cédula del usuario a buscar : ");
+                            String cedula = scan.nextLine();
+
+                            MySQL.diasPasados(conexion, cedula);
+                            MySQL.buscar(conexion, "cedula", "usuarios", cedula, true, "id", true);
+
+                            break;
+                    }
                     break;
 
             }
