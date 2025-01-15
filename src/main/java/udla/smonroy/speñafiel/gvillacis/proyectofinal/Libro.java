@@ -10,7 +10,6 @@ public class Libro {
     private boolean prestado;
     private String titulo;
     private String autor;
-    private Prestamo prestamo;
     private int anio;
 
     public Libro(String titulo, String autor, int anio) {
@@ -48,46 +47,64 @@ public class Libro {
         Scanner scan = new Scanner(System.in);
         //System.out.println(sql);
         try{
-            String sql = "SELECT * FROM libros WHERE id = + ?";
+            String sql = "SELECT * FROM libros WHERE id = ?";
             PreparedStatement preparedStatement = conexion.prepareStatement(sql);
 
             preparedStatement.setInt(1, id);
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if(resultSet.next() && resultSet.getString("disponibilidad").equals("0")) {
-                System.out.println("El libro no se encuentra disponible");
-            } else if (resultSet.next() && !resultSet.getString("cedula").equals("null")){
-                System.out.println("El libro se encuentra en préstamo");
-            }else {
-                sql = "UPDATE libros SET disponibilidad = ?, fecha_prestamo = CURDATE(), cedula = ? WHERE id = ?";
-                preparedStatement = conexion.prepareStatement(sql);
-                preparedStatement.setInt(1, nuevo);
-                preparedStatement.setString(2, cedula);
-                preparedStatement.setInt(3, id);
+            sql = "SELECT * FROM usuarios WHERE cedula = ?";
+            PreparedStatement busquedaUsuario = conexion.prepareStatement(sql);
+            busquedaUsuario.setString(1, cedula);
+            ResultSet resultadoUsuario = busquedaUsuario.executeQuery();
+            //System.out.println("LLEGA");
+            String idUsuario = null;
+            if (resultSet.next()){
+                if (resultadoUsuario.next()){
+                    idUsuario = resultadoUsuario.getString("id");
+                }
 
-                preparedStatement.executeUpdate();
+                if(resultSet.getString("disponibilidad").equals("0")) {
+                    System.out.println("El libro no se encuentra disponible");
 
-                System.out.print("Ingrese el número de días del préstamo : ");
-                String dias = scan.nextLine();
+                } else if (resultSet.getString("cedula") !=  null) {
+                    System.out.println("El libro se encuentra en préstamo");
 
-                sql = "UPDATE libros SET fecha_final_prestamo = DATE_ADD(fecha_prestamo, INTERVAL ? DAY) WHERE id = ?";
-                preparedStatement = conexion.prepareStatement(sql);
-                preparedStatement.setString(1, dias);
-                preparedStatement.setInt(2, id);
+                } else if (idUsuario != null){
+                    System.out.println("El usuario ya tiene un libro");
+                }else {
+                    sql = "UPDATE libros SET disponibilidad = ?, fecha_prestamo = CURDATE(), cedula = ? WHERE id = ?";
+                    preparedStatement = conexion.prepareStatement(sql);
+                    preparedStatement.setInt(1, nuevo);
+                    preparedStatement.setString(2, cedula);
+                    preparedStatement.setInt(3, id);
 
-                preparedStatement.executeUpdate();
+                    preparedStatement.executeUpdate();
 
-                sql = "UPDATE usuarios SET id = ? WHERE cedula = ?";
-                preparedStatement = conexion.prepareStatement(sql);
-                preparedStatement.setInt(1, id);
-                preparedStatement.setString(2, cedula);
+                    System.out.print("Ingrese el número de días del préstamo : ");
+                    String dias = scan.nextLine();
 
-                preparedStatement.executeUpdate();
+                    sql = "UPDATE libros SET fecha_final_prestamo = DATE_ADD(fecha_prestamo, INTERVAL ? DAY) WHERE id = ?";
+                    preparedStatement = conexion.prepareStatement(sql);
+                    preparedStatement.setString(1, dias);
+                    preparedStatement.setInt(2, id);
 
+                    preparedStatement.executeUpdate();
+
+                    sql = "UPDATE usuarios SET id = ? WHERE cedula = ?";
+                    preparedStatement = conexion.prepareStatement(sql);
+                    preparedStatement.setInt(1, id);
+                    preparedStatement.setString(2, cedula);
+
+                    preparedStatement.executeUpdate();
+
+                }
             }
 
         }catch (SQLException e){
+            System.out.println("AQUI");
+            System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
@@ -140,6 +157,66 @@ public class Libro {
         }
     }
 
+    public static void modificarLibro(Connection conexion) {
+        Scanner scan = new Scanner(System.in);
+
+        System.out.print("Ingrese el titulo del libro que desea modificar : ");
+        String titulo = scan.nextLine();
+
+        MySQL.buscar(conexion, "titulo", "libros", titulo, true, "cedula");
+
+        System.out.print("Ingrese el id del libro que desea modificar: ");
+        int id = scan.nextInt(); scan.nextLine();
+
+        String queryBuscar = "SELECT * FROM libros WHERE id = ?";
+        String queryActualizar = "UPDATE libros SET titulo = ?, autor = ?, anio = ? WHERE id = ?";
+
+        try {
+            PreparedStatement buscarStmt = conexion.prepareStatement(queryBuscar);
+            buscarStmt.setInt(1, id);
+            ResultSet rs = buscarStmt.executeQuery();
+
+            if (rs.next()) {
+                System.out.println("\nLibro encontrado:");
+                System.out.println("Título: " + rs.getString("titulo"));
+                System.out.println("Autor: " + rs.getInt("autor"));
+                System.out.println("Año: " + rs.getString("anio"));
+
+                System.out.println("\nIngrese los nuevos datos del libro:");
+                System.out.print("Nuevo titulo (deje en blanco para no modificar): ");
+                String nuevoTitulo = scan.nextLine();
+                nuevoTitulo = nuevoTitulo.isEmpty() ? rs.getString("titulo") : nuevoTitulo;
+
+                System.out.print("Nuevo autor (deje en blanco para no modificar): ");
+                String nuevoAutor = scan.nextLine();
+                nuevoAutor = nuevoAutor.isEmpty() ? rs.getString("autor") : nuevoAutor;
+
+                System.out.print("Nuevo Año (deje en blanco para no modificar): ");
+                String nuevoAnioStr = scan.nextLine();
+                int nuevoAnio = nuevoAnioStr.isEmpty() ? rs.getInt("anio") : Integer.parseInt(nuevoAnioStr);
+
+                try (PreparedStatement actualizarStmt = conexion.prepareStatement(queryActualizar)) {
+                    actualizarStmt.setString(1, nuevoTitulo);
+                    actualizarStmt.setString(2, nuevoAutor);
+                    actualizarStmt.setInt(3, nuevoAnio);
+                    actualizarStmt.setInt(4, id);
+
+                    int filasActualizadas = actualizarStmt.executeUpdate();
+                    if (filasActualizadas > 0) {
+                        System.out.println("Libro actualizado correctamente.");
+                    } else {
+                        System.out.println("No se pudo actualizar el usuario.");
+                    }
+                }
+            } else {
+                System.out.println("No se encontró un libro con el id ingresado");
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error al modificar el libro: " + e.getMessage());
+        }
+    }
+
     public String getTitulo() {
         return titulo;
     }
@@ -156,13 +233,6 @@ public class Libro {
         this.autor = autor;
     }
 
-    public Prestamo getPrestamo() {
-        return prestamo;
-    }
-
-    public void setPrestamo(Prestamo prestamo) {
-        this.prestamo = prestamo;
-    }
 
     public int getAnio() {
         return anio;

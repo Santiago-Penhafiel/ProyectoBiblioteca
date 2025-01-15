@@ -1,6 +1,8 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class MySQL {
     private static final String URL = "jdbc:mysql://localhost:3306/biblioteca";
@@ -32,17 +34,18 @@ public class MySQL {
     public static void eliminarElemento(Connection conexion, String tabla, String columna, Object elemento){
         try  {
 
-            String sql = "DELETE FROM " + tabla + " WHERE " + columna + " = ?";
-            PreparedStatement stm = conexion.prepareStatement(sql);
+            String sql = "DELETE FROM " + tabla+ " WHERE " + columna + " = ?";
+            PreparedStatement preparedStatement = conexion.prepareStatement(sql);
+
 
             if (elemento instanceof String){
-                stm.setString(1, (String)elemento );
+                preparedStatement.setString(1, (String)elemento );
             } else if (elemento instanceof Integer){
-                stm.setInt(1, (Integer)elemento);
+                preparedStatement.setInt(1, (Integer)elemento);
             }
 
             //System.out.println(sql);
-            if(stm.executeUpdate() > 0){
+            if(preparedStatement.executeUpdate() > 0){
                 System.out.println("Se ha eliminado " + elemento);
             } else {
                 System.out.println("No se ha encontrado " + elemento);
@@ -50,7 +53,7 @@ public class MySQL {
 
         }catch (SQLException e){
             System.out.println("No se pudo eliminar " + elemento);
-            e.printStackTrace();
+            System.out.println(e.getMessage());;
         }
     }
 
@@ -62,45 +65,50 @@ public class MySQL {
             int columnas = resultSetMetaData.getColumnCount();
             //System.out.println("COLUMNAS " + columnas);
             int no = -1;
-            for (int i = 1; i <= columnas; i++) { //imprime el encabezado de las columnas
-                String resultado = resultSetMetaData.getColumnName(i);
-                if (! resultado.equals(excepto)){
-                    System.out.print(resultSetMetaData.getColumnName(i) + "\t");
-                } else {
-                    no = i;
-                }
-            }
 
-            System.out.println();
+            if (resultSet.next()){
 
-            while (resultSet.next()){//imprime el contenido de las columnas
-                for (int i = 1; i <= columnas; i++) {
-                    if (i != no){
-                        if(i == 5 && resultSet.getString(i).equals("1")){
-                            System.out.print("Disponible\t");
-                        } else if (i == 5 && resultSet.getString(i).equals("0")) {
-                            System.out.print("No disponible\t");
-                        }else if (i == 6 && resultSet.getString(i) == null) {
-                            System.out.print("No prestado\t");
-                        } else if (i==6 && resultSet.getString(i) == null){
-                            System.out.println("\t");
-                        } else {
-                            System.out.print(resultSet.getString(i) + "\t");
-                        }
+                for (int i = 1; i <= columnas; i++) { //imprime el encabezado de las columnas
+                    String resultado = resultSetMetaData.getColumnName(i);
+                    if (! resultado.equals(excepto)){
+                        System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                    } else {
+                        no = i;
                     }
-                    
                 }
+
                 System.out.println();
+
+                do {//imprime el contenido de las columnas
+                    for (int i = 1; i <= columnas; i++) {
+                        if (i != no){
+                            if(tabla.equals("libros") && i == 5 && resultSet.getString(i).equals("1")){
+                                System.out.print("Disponible\t");
+                            } else if (tabla.equals("libros") && i == 5 && resultSet.getString(i).equals("0")) {
+                                System.out.print("No disponible\t");
+                            }else if(resultSet.getString(i) == null) {
+                                System.out.print("-------\t");
+                            } else {
+                                System.out.print(resultSet.getString(i) + "\t");
+                            }
+                        }
+
+                    }
+                    System.out.println();
+                } while (resultSet.next());
+            }else {
+                System.out.println("Lista vacía");
             }
+
 
         }catch (SQLException e){
-            e.printStackTrace();
+            System.out.println(e.getMessage());;
 
         }
 
     }
 
-    public static ResultSet buscar (Connection conexion, String columna, String tabla, Object elemento, boolean imprimir){
+    public static ResultSet buscar (Connection conexion, String columna, String tabla, Object elemento, boolean imprimir, String excepto){
         String sql = "SELECT * FROM " + tabla + " WHERE " + columna + " = ?"; //se usa la tabla, columna y el elemento a buscar que se requiera
         try{
             PreparedStatement stm = conexion.prepareStatement(sql);
@@ -112,21 +120,35 @@ public class MySQL {
             }
 
             ResultSet resultSet =  stm.executeQuery();
-            if (imprimir){
+
+            int no = -1;
+            if (imprimir && resultSet.next()){
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                 int columnas = resultSetMetaData.getColumnCount();
 
                 for (int i = 1; i <= columnas; i++) {
-                    System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                    if (!resultSetMetaData.getColumnName(i).equals(excepto)){
+                        System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                    }else {
+                        no = i;
+                    }
+
                 }
                 System.out.println();
 
-                while (resultSet.next()){
+                do {
                     for (int i = 1; i <= columnas; i++) {
-                        System.out.print(resultSet.getString(i) + "\t");
+                       if(resultSet.getString(i) == null && i%no != 0){
+                           System.out.print("--------\t");
+                       } else if(resultSet.getString(i) != null && i%no != 0){
+                           System.out.print(resultSet.getString(i) + "\t");
+                       }
                     }
                     System.out.println();
-                }
+                } while (resultSet.next());
+            } else {
+                System.out.println("Elemento no encontrado");
+                return null;
             }
             return resultSet;
 
@@ -134,6 +156,41 @@ public class MySQL {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static int diasPasados (Connection conexion, String cedula){
+        try {
+            String sql = "SELECT * FROM usuarios WHERE cedula = ?";
+            PreparedStatement preparedStatement = conexion.prepareStatement(sql);
+            preparedStatement.setString(1, cedula);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()){
+                int id = resultSet.getInt("id");
+
+                sql = "SELECT fecha_final_prestamo FROM libros WHERE id = ?";
+                preparedStatement =conexion.prepareStatement(sql);
+                preparedStatement.setInt(1, id);
+
+                resultSet = preparedStatement.executeQuery();
+
+                if (resultSet.next()){
+
+                    LocalDate fechaActual = LocalDate.now(); //fecha actual
+
+                    LocalDate fecha_final_prestamo = resultSet.getObject("fecha_column", LocalDate.class);//se obtiene la fecha última de devolución
+
+                    return (int)ChronoUnit.DAYS.between(fecha_final_prestamo, fechaActual); //dias de diferencia entre las dos fechas
+
+                }
+            }
+
+        }catch (SQLException e){
+            System.out.println(e.getMessage());
+        }
+        return 0;
+
     }
 
 

@@ -22,19 +22,30 @@ public class Usuario extends Persona{
 
 
             if (resultSet!=null){
-
-                System.out.println("NO ES NULO");
+                int no = -1;
+                //System.out.println("NO ES NULO");
                 ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
                 int columnas = resultSetMetaData.getColumnCount();
-                for (int i = 1; i <= columnas ; i++) {
-                    System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                for (int i = 1; i <= columnas ; i++) {// imprime encabezados
+                    if(! resultSetMetaData.getColumnName(i).equals("id")){
+                        System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                    }else {
+                        no = i;
+                    }
+
                 }
+
                 System.out.println();
 
-                while (resultSet.next()){
+                while (resultSet.next()){//imprime contenido de la tabla
 
                     for (int i = 1; i <= columnas; i++) {
-                        System.out.print(resultSet.getString(i) + "\t");
+                        if (resultSet.getString(i) == null && i%no != 0){
+                            System.out.println("------\t");
+                        } else if(resultSet.getString(i) != null && i%no != 0){
+                            System.out.print(resultSet.getString(i) + "\t");
+                        }
+
                     }
                     System.out.println();
                     existe = true;
@@ -56,6 +67,12 @@ public class Usuario extends Persona{
 
         System.out.print("Ingrese la cédula del usuario que desea modificar: ");
         String cedula = scan.nextLine();
+
+        int diasRetraso = MySQL.diasPasados(conexion, cedula);
+
+        if (diasRetraso > 0){
+            System.out.println("El usuario tiene " + diasRetraso + "dias de retraso");
+        }
 
         String queryBuscar = "SELECT * FROM usuarios WHERE cedula = ?";
         String queryActualizar = "UPDATE usuarios SET nombre = ?, edad = ?, telefono = ?, correo = ? WHERE cedula = ?";
@@ -117,14 +134,20 @@ public class Usuario extends Persona{
         System.out.print("Ingrese la cédula del usuario que desea eliminar: ");
         String cedula = scan.nextLine();
 
+        int diasRetraso = MySQL.diasPasados(conexion, cedula);
+
+        if (diasRetraso > 0){
+            System.out.println("El usuario tiene " + diasRetraso + "dias de retraso");
+        }
+
         String queryBuscar = "SELECT * FROM usuarios WHERE cedula = ?";
-        String queryEliminar = "DELETE FROM usuarios WHERE cedula = ?";
 
         try {
             PreparedStatement buscarStmt = conexion.prepareStatement(queryBuscar);
             buscarStmt.setString(1, cedula);
             ResultSet rs = buscarStmt.executeQuery();
-            System.out.println("CEDULA = " + cedula + " STM = " + buscarStmt.toString());
+
+            //System.out.println("CEDULA = " + cedula + " STM = " + buscarStmt.toString());
 
             if (rs.next()) {
                 System.out.println("\nUsuario encontrado:");
@@ -137,16 +160,7 @@ public class Usuario extends Persona{
                 String confirmacion = scan.nextLine();
 
                 if (confirmacion.equalsIgnoreCase("s")) {
-                    try (PreparedStatement eliminarStmt = conexion.prepareStatement(queryEliminar)) {
-                        eliminarStmt.setString(1, cedula);
-
-                        int filasEliminadas = eliminarStmt.executeUpdate();
-                        if (filasEliminadas > 0) {
-                            System.out.println("Usuario eliminado correctamente.");
-                        } else {
-                            System.out.println("No se pudo eliminar el usuario.");
-                        }
-                    }
+                    MySQL.eliminarElemento(conexion, "usuarios", "cedula", cedula);
                 } else {
                     System.out.println("Operación cancelada.");
                 }

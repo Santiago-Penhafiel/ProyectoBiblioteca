@@ -1,7 +1,5 @@
 package udla.smonroy.speñafiel.gvillacis.proyectofinal;
 
-import javax.xml.crypto.dsig.spec.XSLTTransformParameterSpec;
-import java.util.EmptyStackException;
 
 public abstract class Persona {
     private String nombre;
