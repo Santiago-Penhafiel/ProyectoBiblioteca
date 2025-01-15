@@ -81,6 +81,8 @@ public class Libro {
                 preparedStatement.setInt(1, id);
                 preparedStatement.setString(2, cedula);
 
+                preparedStatement.executeUpdate();
+
             }
 
         }catch (SQLException e){
