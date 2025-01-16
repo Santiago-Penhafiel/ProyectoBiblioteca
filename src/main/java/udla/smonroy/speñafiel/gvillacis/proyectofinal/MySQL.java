@@ -72,7 +72,7 @@ public class MySQL {
                 for (int i = 1; i <= columnas; i++) { //imprime el encabezado de las columnas
                     String resultado = resultSetMetaData.getColumnName(i);
                     if (! resultado.equals(excepto)){
-                        System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                        System.out.print(resultSetMetaData.getColumnName(i) + "\t\t\t");
                     } else {
                         no = i;
                     }
@@ -84,13 +84,13 @@ public class MySQL {
                     for (int i = 1; i <= columnas; i++) {
                         if (i != no){
                             if(tabla.equals("libros") && i == 5 && resultSet.getString(i).equals("1")){
-                                System.out.print("Disponible\t");
+                                System.out.print("Disponible\t\t");
                             } else if (tabla.equals("libros") && i == 5 && resultSet.getString(i).equals("0")) {
-                                System.out.print("No disponible\t");
+                                System.out.print("No disponible\t\t");
                             }else if(resultSet.getString(i) == null) {
-                                System.out.print("-------\t");
+                                System.out.print("-------\t\t");
                             } else {
-                                System.out.print(resultSet.getString(i) + "\t");
+                                System.out.print(resultSet.getString(i) + "\t\t");
                             }
                         }
 
@@ -151,7 +151,7 @@ public class MySQL {
                 if (encabezado){
                     for (int i = 1; i <= columnas; i++) {
                         if (!resultSetMetaData.getColumnName(i).equals(excepto)){
-                            System.out.print(resultSetMetaData.getColumnName(i) + "\t");
+                            System.out.print(resultSetMetaData.getColumnName(i) + "\t\t\t");
                         }else {
                             no = i;
                         }

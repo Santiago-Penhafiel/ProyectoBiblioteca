@@ -215,7 +215,7 @@ public class Biblioteca {
                             break;
 
                 case 4: //imprimir inventario
-                    MySQL.imprimirTabla(conexion, "libros", "cedula");
+                    MySQL.imprimirTabla(conexion, "libros", "null");
                     break;
 
                 case 5:  //lista de usuarios
